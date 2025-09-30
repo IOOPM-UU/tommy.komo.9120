@@ -26,6 +26,63 @@ void test_create_destroy()
    //CU_ASSERT_PTR_NULL(ht);
 }
 
+void test_insert_lookup()
+{
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+  ioopm_hash_table_insert(ht, 32, "hello");
+
+  char *value = ioopm_hash_table_lookup(ht, 32);
+
+  CU_ASSERT_STRING_EQUAL(value, "hello");
+  ioopm_hash_table_destroy(ht);
+}
+
+void test_insert_once()
+{
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+  char *value = ioopm_hash_table_lookup(ht, 15);
+
+  CU_ASSERT_PTR_NULL(value);
+
+  ioopm_hash_table_insert(ht, 15, "hello");
+  char *value2 = ioopm_hash_table_lookup(ht, 15);
+
+  CU_ASSERT_STRING_EQUAL(value2, "hello");
+  ioopm_hash_table_destroy(ht);
+}
+
+void test_key_in_use()
+{
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+  ioopm_hash_table_insert(ht, 7, "test");
+  ioopm_hash_table_insert(ht, 7, "correct");
+
+  char *value = ioopm_hash_table_lookup(ht, 7);
+  CU_ASSERT_STRING_EQUAL(value, "correct");
+  ioopm_hash_table_destroy(ht);
+}
+
+void test_no_key_lookup()
+{
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+  ioopm_hash_table_insert(ht, 7, "test");
+
+  char *value = ioopm_hash_table_lookup(ht, 2);
+  CU_ASSERT_PTR_NULL(value);
+  ioopm_hash_table_destroy(ht);
+}
+
+void test_negative_keys()  // Kan komma att ändra senare vid implementaion
+{
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+  ioopm_hash_table_insert(ht, 7, "test");
+
+  char *value = ioopm_hash_table_lookup(ht, -7);
+  CU_ASSERT_STRING_EQUAL(value, "test");
+  ioopm_hash_table_destroy(ht);
+  
+}
+
 int main() {
   // First we try to set up CUnit, and exit if we fail
   if (CU_initialize_registry() != CUE_SUCCESS)
@@ -47,6 +104,11 @@ int main() {
   // copy a line below and change the information
   if (
     (CU_add_test(my_test_suite, "create and destroy hashtable", test_create_destroy) == NULL) ||
+    (CU_add_test(my_test_suite, "insert and lookup an entry", test_insert_lookup) == NULL) || 
+    (CU_add_test(my_test_suite, "insert and lookup an entry", test_insert_once) == NULL) ||
+    (CU_add_test(my_test_suite, "insert and lookup an entry", test_key_in_use) == NULL) ||
+    (CU_add_test(my_test_suite, "insert and lookup an entry", test_negative_keys) == NULL) ||
+    (CU_add_test(my_test_suite, "insert and lookup an entry", test_no_key_lookup) == NULL) ||
     0
   )
     {
