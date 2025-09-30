@@ -19,7 +19,7 @@ struct hash_table
 
 
 
-entry_t *entry_create(int key, char *value, entry_t *next)
+static entry_t *entry_create(int key, char *value, entry_t *next)
 {
   entry_t *created_entry = calloc(1,sizeof(entry_t));
 
@@ -30,7 +30,11 @@ entry_t *entry_create(int key, char *value, entry_t *next)
   return created_entry;
 }
 
-entry_t *find_previous_entry_for_key(entry_t *bucket,int key){
+static void entry_destroy(entry_t *entry){
+  free(entry);
+}
+
+static entry_t *find_previous_entry_for_key(entry_t *bucket,int key){
   
   entry_t *cursor = bucket;
   
@@ -56,8 +60,21 @@ ioopm_hash_table_t *ioopm_hash_table_create()
 }
 
 void ioopm_hash_table_destroy(ioopm_hash_table_t *ht) {
+  
+  for(int i = 0; i < 17; i++){      // Loopar igenom buckets        
+    entry_t *cursor = ht->buckets[i].next; // cursor pekar mot första riktiga entryn 
+    if(cursor == NULL){            // kollar att första riktiga inte är NULL, om så är fallet gå till nästa bucket
+      continue;
+    }
+    while(cursor != NULL){
+    entry_t *next = cursor->next;  // Sparar pointern till nästa entry i bucketen
+    entry_destroy(cursor);                // Free den entry vi tittar på just nu
+    cursor = next;                  // Skriver om cursor till att peka mot nästa entry         // Kör loopen igen tills nästa entry är NULL
+    }    
+  }
   free(ht);
 }
+
 
 void ioopm_hash_table_insert(ioopm_hash_table_t *ht, int key, char *value) 
 {
