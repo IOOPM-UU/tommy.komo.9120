@@ -1,9 +1,12 @@
 #include <stdlib.h>
 #include "hash_table.h"
 #include <stdio.h>
+#include <stdbool.h>
+
 
 typedef struct entry entry_t;
 typedef struct hash_table ioopm_hash_table_t;
+
 
 struct entry
 {
@@ -16,7 +19,6 @@ struct hash_table
 {
     entry_t buckets[17];
 };
-
 
 
 static entry_t *entry_create(int key, char *value, entry_t *next)
@@ -79,7 +81,7 @@ void ioopm_hash_table_destroy(ioopm_hash_table_t *ht) {
 void ioopm_hash_table_insert(ioopm_hash_table_t *ht, int key, char *value) 
 {
   /// Calculate the bucket for this entry
-  int bucket = key % 17;
+  int bucket = ((key % 17) + 17) % 17;
   /// Search for an existing entry for a key
   entry_t *entry = find_previous_entry_for_key(&ht->buckets[bucket], key);
   entry_t *next = entry->next;
@@ -95,7 +97,22 @@ void ioopm_hash_table_insert(ioopm_hash_table_t *ht, int key, char *value)
     }
 }
 
-char *ioopm_hash_table_lookup(ioopm_hash_table_t *ht, int key){
-    return (NULL);
+
+bool ioopm_hash_table_lookup(ioopm_hash_table_t *ht, int key, char **result){   //skickar med en pekare till en pekare, eftersom när vi hittat value som är kopplad till den nyckel vi söker för, ska ge tillbaka en bool för att signalera det som en pointer som pekar mot det värdets plats i minnet. Den pekaren kommer vi lagra i char *val. när vi använder funktionen lookup skickar vi med &val, alltså adressen till val men val är ju redan en pekare så det är att skicka adressen till en pekare så att man kan ändra själva pekaren. char ** med andra ord.
+  int bucket = ((key % 17) + 17) % 17;
+  /// Find the previous entry for key
+  entry_t *tmp = find_previous_entry_for_key(&ht->buckets[bucket], key);
+  entry_t *next = tmp->next;
+
+if (next && next->key == key) 
+  {
+    *result = next->value;  // kan va null och det är fine eftersom vi returnerat true också 
+    return true;
+  }
+else
+  {
+    *result = NULL;
+    return false;
+  }
 }
 
