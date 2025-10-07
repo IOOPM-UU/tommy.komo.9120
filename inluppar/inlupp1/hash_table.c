@@ -4,8 +4,11 @@
 #include <stdbool.h>
 
 
+#define No_Buckets 17
+
 typedef struct entry entry_t;
 typedef struct hash_table ioopm_hash_table_t;
+
 
 
 struct entry
@@ -17,9 +20,14 @@ struct entry
 
 struct hash_table
 {
-    entry_t buckets[17];
+    entry_t buckets[No_Buckets];
 };
 
+
+static int bucket_index(int key)
+{
+  return((key % No_Buckets) + No_Buckets) % No_Buckets;
+}
 
 static entry_t *entry_create(int key, char *value, entry_t *next)
 {
@@ -63,7 +71,7 @@ ioopm_hash_table_t *ioopm_hash_table_create()
 
 void ioopm_hash_table_destroy(ioopm_hash_table_t *ht) {
   
-  for(int i = 0; i < 17; i++){      // Loopar igenom buckets        
+  for(int i = 0; i < No_Buckets; i++){      // Loopar igenom buckets        
     entry_t *cursor = ht->buckets[i].next; // cursor pekar mot första riktiga entryn 
     if(cursor == NULL){            // kollar att första riktiga inte är NULL, om så är fallet gå till nästa bucket
       continue;
@@ -81,7 +89,7 @@ void ioopm_hash_table_destroy(ioopm_hash_table_t *ht) {
 void ioopm_hash_table_insert(ioopm_hash_table_t *ht, int key, char *value) 
 {
   /// Calculate the bucket for this entry
-  int bucket = ((key % 17) + 17) % 17;
+  int bucket = bucket_index(key);
   /// Search for an existing entry for a key
   entry_t *entry = find_previous_entry_for_key(&ht->buckets[bucket], key);
   entry_t *next = entry->next;
@@ -99,7 +107,7 @@ void ioopm_hash_table_insert(ioopm_hash_table_t *ht, int key, char *value)
 
 
 bool ioopm_hash_table_lookup(ioopm_hash_table_t *ht, int key, char **result){   //skickar med en pekare till en pekare, eftersom när vi hittat value som är kopplad till den nyckel vi söker för, ska ge tillbaka en bool för att signalera det som en pointer som pekar mot det värdets plats i minnet. Den pekaren kommer vi lagra i char *val. när vi använder funktionen lookup skickar vi med &val, alltså adressen till val men val är ju redan en pekare så det är att skicka adressen till en pekare så att man kan ändra själva pekaren. char ** med andra ord.
-  int bucket = ((key % 17) + 17) % 17;
+  int bucket = bucket_index(key);
   /// Find the previous entry for key
   entry_t *tmp = find_previous_entry_for_key(&ht->buckets[bucket], key);
   entry_t *next = tmp->next;
@@ -116,3 +124,107 @@ else
   }
 }
 
+bool ioopm_hash_table_remove(ioopm_hash_table_t *ht, int key, char **removed_value){
+  int bucket = bucket_index(key);
+
+  entry_t *prev = find_previous_entry_for_key(&ht->buckets[bucket], key);
+  entry_t *cursor = prev->next;
+
+  if (cursor && cursor->key == key)
+    {
+      if (removed_value) *removed_value = cursor->value;  //användaren kan själv välja om den vill ta bort 
+      prev->next = cursor->next;
+      free(cursor);
+      return true;
+    }
+  else
+    {
+      if (removed_value) *removed_value = NULL;
+      return false;
+    }
+  }
+
+int ioopm_hash_table_size(ioopm_hash_table_t *ht)
+{
+
+  int counter = 0;
+  
+ 
+  for(int bucket_count = 0; bucket_count < No_Buckets; bucket_count++)
+  {
+    entry_t *bucket = &ht->buckets[bucket_count];
+    entry_t *next_entry = bucket->next;    //dessa är kopierade från tidigare lösningar och ger oss helt enkelt bara bucketsarna i omvänd ordning
+    
+    while (next_entry != NULL)
+    {
+      counter++;
+      next_entry = next_entry->next;
+    }
+  } return counter;
+}
+
+bool ioopm_hash_table_is_empty(ioopm_hash_table_t *ht)
+{
+  for(int bucket_count = 0; bucket_count < No_Buckets; bucket_count++)
+  {
+    entry_t *bucket = &ht->buckets[bucket_count];
+    entry_t *next_entry = bucket->next; // samma som innan men stoppar så fort det finns en entry
+    if(next_entry != NULL){
+      return false;
+    }
+  } return true;
+}
+
+void ioopm_hash_table_clear(ioopm_hash_table_t *ht){
+    
+  for(int i = 0; i < No_Buckets; i++){      // Loopar igenom buckets        
+    entry_t *cursor = ht->buckets[i].next; // cursor pekar mot första riktiga entryn 
+    if(cursor == NULL){            // kollar att första riktiga inte är NULL, om så är fallet gå till nästa bucket
+      continue;
+    }
+    while(cursor != NULL){
+    entry_t *next = cursor->next;  // Sparar pointern till nästa entry i bucketen
+    entry_destroy(cursor);                // Free den entry vi tittar på just nu
+    cursor = next;                  // Skriver om cursor till att peka mot nästa entry         // Kör loopen igen tills nästa entry är NULL
+    }
+    ht->buckets[i].next = NULL;     //Detta för att den nu tomma bucketen inte ska ha en dangling pointer. Det vi gör är bara att sätta dummyns next till null så den omöjligt kan peka på skräp
+  }
+}
+
+int *ioopm_hash_table_keys(ioopm_hash_table_t *ht){
+  int counter = 0;
+  int size = ioopm_hash_table_size(ht);
+  int *all_keys = calloc(size, sizeof(int)); // Detta för att få en tom array att kunna lagra nycklarna i
+ 
+  for(int i = 0; i < No_Buckets; i++)
+  {
+    entry_t *bucket = &ht->buckets[i];
+    entry_t *next_entry = bucket->next;    //dessa är kopierade från tidigare lösningar och ger oss helt enkelt bara bucketsarna i omvänd ordning
+    
+    while (next_entry != NULL)
+    {
+      all_keys[counter] = next_entry->key;
+      counter++;
+      next_entry = next_entry->next;
+    }
+  } return all_keys;
+}
+
+char **ioopm_hash_table_values(ioopm_hash_table_t *ht){
+  int counter = 0;
+  int size = ioopm_hash_table_size(ht);
+  char **all_values = calloc(size, sizeof(char *)); // Detta för att få en tom array att kunna lagra values i
+ 
+  for(int i = 0; i < No_Buckets; i++)
+  {
+    entry_t *bucket = &ht->buckets[i];
+    entry_t *next_entry = bucket->next;    //dessa är kopierade från tidigare lösningar och ger oss helt enkelt bara bucketsarna i omvänd ordning
+    
+    while (next_entry != NULL)
+    {
+      all_values[counter] = next_entry->value;
+      counter++;
+      next_entry = next_entry->next;
+    }
+  } return all_values;
+}
