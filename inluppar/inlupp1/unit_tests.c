@@ -33,64 +33,11 @@ void test_lookup_empty()
 
 
 
-
-void test_lookup_empty()
-{
-   ioopm_hash_table_t *ht = ioopm_hash_table_create();
-   
-   for (int i = 0; i < 18; ++i) /// 18 is chosen due to our 17 pre-chosen buckets that can't be changed
-     {
-      char *v = NULL; 
-      CU_ASSERT_FALSE(ioopm_hash_table_lookup(ht, i, &v));
-      CU_ASSERT_PTR_NULL(v);
-     }
-
-   ioopm_hash_table_destroy(ht);
-}
-
-
-
 void test_create_destroy()
 {
    ioopm_hash_table_t *ht = ioopm_hash_table_create();
    CU_ASSERT_PTR_NOT_NULL(ht);
    ioopm_hash_table_destroy(ht);
-}
-
-
-
-void test_update_existing_key(){
-     // Testar att ändra värdet en redan existerande nyckel (använder värdet från förra testet)
-
-    ioopm_hash_table_t *ht = ioopm_hash_table_create();
-
-    ioopm_hash_table_insert(ht, 5, "test");
-    ioopm_hash_table_insert(ht, 5, "rätt" );
-    char *keyvalue = NULL;
-    bool truefalse = ioopm_hash_table_lookup(ht, 5, &keyvalue);
-    CU_ASSERT_TRUE(truefalse);
-    CU_ASSERT_STRING_EQUAL(keyvalue, "rätt");
-    ioopm_hash_table_destroy(ht);
-
-}
-
-
-void test_collision_same_bucket()
-{
-  ioopm_hash_table_t *ht = ioopm_hash_table_create();
-
-  ioopm_hash_table_insert(ht, 5, "a");
-  ioopm_hash_table_insert(ht, 22, "b");
-
-  char *keyvalue = NULL;
-  CU_ASSERT_TRUE(ioopm_hash_table_lookup(ht, 22, &keyvalue));
-  CU_ASSERT_STRING_EQUAL(keyvalue, "b");
-
-  char *keyvalue2 = NULL;
-  CU_ASSERT_TRUE(ioopm_hash_table_lookup(ht, 5, &keyvalue2));
-  CU_ASSERT_STRING_EQUAL(keyvalue2, "a");
-
-  ioopm_hash_table_destroy(ht);
 }
 
 
@@ -138,13 +85,9 @@ void test_insert_lookup()
   char *keyvalue = NULL;
   CU_ASSERT_TRUE(ioopm_hash_table_lookup(ht, 32, &keyvalue));
   CU_ASSERT_STRING_EQUAL(keyvalue, "hello");
-  char *keyvalue = NULL;
-  CU_ASSERT_TRUE(ioopm_hash_table_lookup(ht, 32, &keyvalue));
-  CU_ASSERT_STRING_EQUAL(keyvalue, "hello");
 
   ioopm_hash_table_destroy(ht);
 }
-
 
 
 
@@ -158,10 +101,6 @@ void test_key_in_use()
   CU_ASSERT_TRUE(ioopm_hash_table_lookup(ht, 7, &keyvalue));
   CU_ASSERT_STRING_EQUAL(keyvalue, "correct");
 
-  char *keyvalue = NULL;
-  CU_ASSERT_TRUE(ioopm_hash_table_lookup(ht, 7, &keyvalue));
-  CU_ASSERT_STRING_EQUAL(keyvalue, "correct");
-
   ioopm_hash_table_destroy(ht);
 }
 
@@ -169,9 +108,6 @@ void test_no_key_lookup()
 {
   ioopm_hash_table_t *ht = ioopm_hash_table_create();
   ioopm_hash_table_insert(ht, 7, "test");
-
-  char *keyvalue = NULL;
-  CU_ASSERT_FALSE(ioopm_hash_table_lookup(ht, 8, &keyvalue));
 
   char *keyvalue = NULL;
   CU_ASSERT_FALSE(ioopm_hash_table_lookup(ht, 8, &keyvalue));
