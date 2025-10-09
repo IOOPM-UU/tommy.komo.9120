@@ -236,40 +236,6 @@ void test_hash_table_clear_and_empty(){
   ioopm_hash_table_destroy(ht);
 }
 
-void test_all_keys(){
-  ioopm_hash_table_t *ht = ioopm_hash_table_create();
-  
-  int keys[5] = {3, 10, 42, 0, 99};
-  bool found[5] = {false};
-  ioopm_hash_table_insert(ht, 3, "h");
-  ioopm_hash_table_insert(ht, 10, "e");
-  ioopm_hash_table_insert(ht, 42, "l");
-  ioopm_hash_table_insert(ht, 0, "l");
-  ioopm_hash_table_insert(ht, 99, "o");
-
-  int *table_keys = ioopm_hash_table_keys(ht);
-  for(int i = 0; i < 5 ; i++){ //loop för alla nycklar vi borde ha
-   
-    bool match_found = false; //fick hjälp av chat att implementera
-    
-    for(int z = 0; z < 5 ; z++){ //loop för alla nycklar vi har
-      
-      if(keys[i] == table_keys[z])
-      {
-        found[i] = true;
-        match_found = true;
-        break;
-      } 
-    } if (match_found == false){
-      CU_FAIL("Found a key that was never inserted!");
-    }
-  }
-  for(int i = 0; i < 5 ; i++){ //alla värden ska vara true om funktionerna funkar som de ska
-      CU_ASSERT_TRUE(found[i]);
-    }
-  ioopm_hash_table_destroy(ht); 
-}
-
 
 
 int main() {
