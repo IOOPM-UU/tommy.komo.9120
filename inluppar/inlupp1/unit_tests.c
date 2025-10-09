@@ -2,6 +2,7 @@
 #include "hash_table.h"
 #include <limits.h>
 #include <limits.h>
+#include <stdlib.h>
 
 
 int init_suite(void) {
@@ -237,7 +238,79 @@ void test_hash_table_clear_and_empty(){
   ioopm_hash_table_destroy(ht);
 }
 
+void test_all_keys(){
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+  
+  int keys[5] = {3, 10, 42, 0, 99};
+  bool found[5] = {false};
+  ioopm_hash_table_insert(ht, 3, "h");
+  ioopm_hash_table_insert(ht, 10, "e");
+  ioopm_hash_table_insert(ht, 42, "l");
+  ioopm_hash_table_insert(ht, 0, "l");
+  ioopm_hash_table_insert(ht, 99, "o");
 
+  int *table_keys = ioopm_hash_table_keys(ht);
+  for(int i = 0; i < 5 ; i++){ //loop för alla nycklar vi borde ha, i -> keys[i]
+   
+    bool match_found = false; //fick hjälp av chat att implementera
+    
+    for(int z = 0; z < 5 ; z++){ //loop för alla nycklar vi har
+      
+      if(keys[i] == table_keys[z])
+      {
+        found[i] = true;
+        match_found = true;
+        break;
+      } 
+    } if (match_found == false){
+      CU_FAIL("Found a key that was never inserted!");
+    }
+  }
+  for(int i = 0; i < 5 ; i++){ //alla värden ska vara true om funktionerna funkar som de ska
+      CU_ASSERT_TRUE(found[i]);
+    }
+  free(table_keys);
+  
+  ioopm_hash_table_destroy(ht); 
+}
+
+
+void test_all_values()
+{
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+
+  int keys[5] = {3, 10, 42, 0, 99};
+  char *values[5] = {"three","ten","fortytwo","zero","ninetynine"};
+  bool found[5] = {false, false, false, false, false};
+
+  for(int i = 0; i<5 ; i++){
+    ioopm_hash_table_insert(ht, keys[i], values[i]);  // lägg in korresponderande nyckel med värde 
+  }
+  
+  char **table_values = ioopm_hash_table_values(ht);
+
+  for (int i= 0; i < 5; i++){
+    bool match_found = false;
+    for (int j = 0; j < 5; ++j){
+      if (values[i] == table_values[j]) {
+        found[i] = true;
+        match_found = true;
+        break;
+      }
+    }
+    if (!match_found){
+      CU_FAIL("Found a value that was never inserted!");
+    }
+  }
+
+  for(int i = 0; i < 5; i++){
+    CU_ASSERT_TRUE(found[i]);
+  } 
+
+  free(table_values);
+  
+  ioopm_hash_table_destroy(ht);
+}
 
 int main() {
   // First we try to set up CUnit, and exit if we fail
@@ -274,6 +347,8 @@ int main() {
     (CU_add_test(my_test_suite, "Counts entrys in a empty ht", test_count_entrys_empty) == NULL) ||
     (CU_add_test(my_test_suite, "Counts one entry", test_count_one_entry) == NULL) ||
     (CU_add_test(my_test_suite, "first cheks if the ht-empty function works, then uses it to prove our clear function work aswell", test_hash_table_clear_and_empty) == NULL) ||
+    (CU_add_test(my_test_suite, "first cheks if the ht-empty function works, then uses it to prove our clear function work aswell", test_all_keys) == NULL) ||
+    (CU_add_test(my_test_suite, "first cheks if the ht-empty function works, then uses it to prove our clear function work aswell", test_all_values) == NULL) ||
     0
   )
     {
