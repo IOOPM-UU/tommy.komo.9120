@@ -146,15 +146,13 @@ bool ioopm_hash_table_remove(ioopm_hash_table_t *ht, int key, char **removed_val
 
 int ioopm_hash_table_size(ioopm_hash_table_t *ht)
 {
-
   int counter = 0;
   
- 
   for(int bucket_count = 0; bucket_count < No_Buckets; bucket_count++)
   {
     entry_t *bucket = &ht->buckets[bucket_count];
     entry_t *next_entry = bucket->next;    //dessa är kopierade från tidigare lösningar och ger oss helt enkelt bara bucketsarna i omvänd ordning
-    
+  
     while (next_entry != NULL)
     {
       counter++;
@@ -191,40 +189,3 @@ void ioopm_hash_table_clear(ioopm_hash_table_t *ht){
   }
 }
 
-int *ioopm_hash_table_keys(ioopm_hash_table_t *ht){
-  int counter = 0;
-  int size = ioopm_hash_table_size(ht);
-  int *all_keys = calloc(size, sizeof(int)); // Detta för att få en tom array att kunna lagra nycklarna i
- 
-  for(int i = 0; i < No_Buckets; i++)
-  {
-    entry_t *bucket = &ht->buckets[i];
-    entry_t *next_entry = bucket->next;    //dessa är kopierade från tidigare lösningar och ger oss helt enkelt bara bucketsarna i omvänd ordning
-    
-    while (next_entry != NULL)
-    {
-      all_keys[counter] = next_entry->key;
-      counter++;
-      next_entry = next_entry->next;
-    }
-  } return all_keys;
-}
-
-char **ioopm_hash_table_values(ioopm_hash_table_t *ht){
-  int counter = 0;
-  int size = ioopm_hash_table_size(ht);
-  char **all_values = calloc(size, sizeof(char *)); // Detta för att få en tom array att kunna lagra values i
- 
-  for(int i = 0; i < No_Buckets; i++)
-  {
-    entry_t *bucket = &ht->buckets[i];
-    entry_t *next_entry = bucket->next;    //dessa är kopierade från tidigare lösningar och ger oss helt enkelt bara bucketsarna i omvänd ordning
-    
-    while (next_entry != NULL)
-    {
-      all_values[counter] = next_entry->value;
-      counter++;
-      next_entry = next_entry->next;
-    }
-  } return all_values;
-}
