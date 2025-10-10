@@ -2,13 +2,14 @@
 #include "hash_table.h"
 #include <stdio.h>
 #include <stdbool.h>
-
+#include <string.h>
 
 #define No_Buckets 17
 
 typedef struct entry entry_t;
 typedef struct hash_table ioopm_hash_table_t;
-
+typedef bool ioopm_predicate(int key, char *value, void *extra);
+typedef void ioopm_apply_function(int key, char **value, void *extra);
 
 
 struct entry
@@ -59,6 +60,20 @@ static entry_t *find_previous_entry_for_key(entry_t *bucket,int key){
       }
     }
     return cursor; 
+}
+
+static bool key_equiv(int key, char *value_ignored, void *x)
+{
+  int *other_key_ptr = x;
+  int other_key = *other_key_ptr;
+  return key == other_key;
+}
+
+static bool value_equiv(int key_ignored, char *entry_value, void *x)
+{
+  (void)key_ignored;
+  char *other_value = x;
+  return strcmp(entry_value, other_value) == 0;
 }
 
 ioopm_hash_table_t *ioopm_hash_table_create()
@@ -114,12 +129,12 @@ bool ioopm_hash_table_lookup(ioopm_hash_table_t *ht, int key, char **result){   
 
 if (next && next->key == key) 
   {
-    *result = next->value;  // kan va null och det är fine eftersom vi returnerat true också 
+    if (result) *result = next->value;  // kan va null och det är fine eftersom vi returnerat true också 
     return true;
   }
 else
   {
-    *result = NULL;
+    if (result) *result = NULL;
     return false;
   }
 }
@@ -151,7 +166,7 @@ int ioopm_hash_table_size(ioopm_hash_table_t *ht)
   for(int bucket_count = 0; bucket_count < No_Buckets; bucket_count++)
   {
     entry_t *bucket = &ht->buckets[bucket_count];
-    entry_t *next_entry = bucket->next;    //dessa är kopierade från tidigare lösningar och ger oss helt enkelt bara bucketsarna i omvänd ordning
+    entry_t *next_entry = bucket->next;    
   
     while (next_entry != NULL)
     {
@@ -216,7 +231,7 @@ char **ioopm_hash_table_values(ioopm_hash_table_t *ht){
   for(int i = 0; i < No_Buckets; i++)
   {
     entry_t *bucket = &ht->buckets[i];
-    entry_t *next_entry = bucket->next;    //dessa är kopierade från tidigare lösningar och ger oss helt enkelt bara bucketsarna i omvänd ordning
+    entry_t *next_entry = bucket->next;  
     
     while (next_entry != NULL)
     {
@@ -227,3 +242,58 @@ char **ioopm_hash_table_values(ioopm_hash_table_t *ht){
   } return all_values;
 }
 
+bool ioopm_hash_table_has_key(ioopm_hash_table_t *ht, int key){
+
+  return ioopm_hash_table_any(ht, key_equiv, &key);
+}
+
+
+bool ioopm_hash_table_has_values(ioopm_hash_table_t *ht, char *value)
+{
+   return ioopm_hash_table_any(ht, value_equiv, value);
+}
+
+bool ioopm_hash_table_any(ioopm_hash_table_t *ht, ioopm_predicate *pred, void *extra)
+{
+  for(int i = 0; i < No_Buckets;i++){
+    entry_t *bucket = &ht->buckets[i];
+    entry_t *cursor = bucket->next;
+
+    while(cursor != NULL){
+      if (pred(cursor->key, cursor->value, extra)){
+        return true;
+      }
+      cursor = cursor->next;
+    }
+  }
+  return false;
+}
+
+bool ioopm_hash_table_all(ioopm_hash_table_t *ht, ioopm_predicate *pred, void *extra)
+{
+  for(int i = 0; i < No_Buckets; i++){
+    entry_t *bucket = &ht->buckets[i];
+    entry_t *cursor = bucket->next;
+
+    while(cursor != NULL){
+      if (!pred(cursor->key, cursor->value, extra)){
+        return false;
+      }
+      cursor = cursor->next;
+    } 
+  }
+  return true;
+}
+
+void ioopm_hash_table_apply_to_all(ioopm_hash_table_t *ht, ioopm_apply_function *apply_func, void *arg)
+{
+  for(int i = 0; i < No_Buckets; i++){
+    entry_t *bucket = &ht->buckets[i];
+    entry_t *cursor = bucket->next;
+  
+    while(cursor != NULL){
+      apply_func(cursor->key, &cursor->value, arg);
+      cursor = cursor->next;
+    }
+  }
+}

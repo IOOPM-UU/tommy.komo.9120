@@ -312,6 +312,110 @@ void test_all_values()
   ioopm_hash_table_destroy(ht);
 }
 
+void test_if_key_exist(){
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+
+  ioopm_hash_table_insert(ht, 5, "hej");
+  CU_ASSERT_TRUE(ioopm_hash_table_has_key(ht, 5));
+  ioopm_hash_table_insert(ht, 22, "då" );
+  CU_ASSERT_TRUE(ioopm_hash_table_has_key(ht, 5));
+  CU_ASSERT_TRUE(ioopm_hash_table_has_key(ht, 22));
+
+  ioopm_hash_table_destroy(ht); 
+}
+
+void test_if_value_exist(){
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+
+  ioopm_hash_table_insert(ht, 5, "hej");
+  CU_ASSERT_TRUE(ioopm_hash_table_has_values(ht, "hej"));
+  
+  char *copy = strdup("hej");  
+  CU_ASSERT_TRUE(ioopm_hash_table_has_values(ht, copy));
+  free(copy);
+
+  ioopm_hash_table_destroy(ht); 
+}
+
+
+
+bool value_is_hej(int key, char *value, void *x)
+{
+    return strcmp(value, "hej") == 0;
+}
+
+void test_pred_any(){
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+
+  ioopm_hash_table_insert(ht, 5, "hej");
+  ioopm_hash_table_insert(ht, 22, "fel");
+
+  bool result = ioopm_hash_table_any(ht, value_is_hej, NULL);
+  CU_ASSERT_TRUE(result);
+  
+  ioopm_hash_table_clear(ht);
+  
+  ioopm_hash_table_insert(ht, 22, "fel");
+  bool wrong_result = ioopm_hash_table_any(ht, value_is_hej, NULL);
+  CU_ASSERT_FALSE(wrong_result);
+
+  ioopm_hash_table_destroy(ht);
+}
+
+void test_pred_all(){
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+
+  ioopm_hash_table_insert(ht, 5, "hej");
+  ioopm_hash_table_insert(ht, 22, "hej");
+  ioopm_hash_table_insert(ht, 25, "hej");
+  ioopm_hash_table_insert(ht, 0, "hej");
+  ioopm_hash_table_insert(ht, 16, "hej");
+
+  bool result = ioopm_hash_table_all(ht, value_is_hej, NULL);
+  CU_ASSERT_TRUE(result);
+  
+  ioopm_hash_table_clear(ht);
+  
+  ioopm_hash_table_insert(ht, 22, "hej");
+  ioopm_hash_table_insert(ht, 25, "hej");
+  ioopm_hash_table_insert(ht, 0, "hej");
+  ioopm_hash_table_insert(ht, 16, "hej");
+  ioopm_hash_table_insert(ht, 22, "fel");
+  
+  bool wrong_result = ioopm_hash_table_all(ht, value_is_hej, NULL);
+  CU_ASSERT_FALSE(wrong_result);
+
+  ioopm_hash_table_destroy(ht);
+}
+
+void apply_string_to_all(int key_ignore, char **value, void *extra)
+{
+  char *str = extra;
+  *value = str;
+}
+
+
+void test_apply_to_all()
+{
+  char *str = "paint";
+  ioopm_hash_table_t *ht = ioopm_hash_table_create();
+    
+  ioopm_hash_table_insert(ht, 1, "green");
+  ioopm_hash_table_insert(ht, 2, "blue");
+  ioopm_hash_table_insert(ht, 3, "red");
+
+  ioopm_hash_table_apply_to_all(ht, apply_string_to_all, str);
+
+  CU_ASSERT_TRUE(ioopm_hash_table_has_values(ht, "paint"));
+  CU_ASSERT_FALSE(ioopm_hash_table_has_values(ht, "green"));
+  CU_ASSERT_FALSE(ioopm_hash_table_has_values(ht, "blue"));
+  CU_ASSERT_FALSE(ioopm_hash_table_has_values(ht, "red"));
+
+  ioopm_hash_table_destroy(ht);
+}
+
+
+
 int main() {
   // First we try to set up CUnit, and exit if we fail
   if (CU_initialize_registry() != CUE_SUCCESS)
@@ -347,8 +451,14 @@ int main() {
     (CU_add_test(my_test_suite, "Counts entrys in a empty ht", test_count_entrys_empty) == NULL) ||
     (CU_add_test(my_test_suite, "Counts one entry", test_count_one_entry) == NULL) ||
     (CU_add_test(my_test_suite, "first cheks if the ht-empty function works, then uses it to prove our clear function work aswell", test_hash_table_clear_and_empty) == NULL) ||
-    (CU_add_test(my_test_suite, "first cheks if the ht-empty function works, then uses it to prove our clear function work aswell", test_all_keys) == NULL) ||
-    (CU_add_test(my_test_suite, "first cheks if the ht-empty function works, then uses it to prove our clear function work aswell", test_all_values) == NULL) ||
+    (CU_add_test(my_test_suite, "kollar så att all keys funktionen får ut alla nycklar ur ht på korrekt sätt", test_all_keys) == NULL) ||
+    (CU_add_test(my_test_suite, "kollar så att values funktionen får ut alla values ur ht på korrekt sätt", test_all_values) == NULL) ||
+    (CU_add_test(my_test_suite, "kollar om sökt nyckel finns", test_if_key_exist) == NULL) ||
+    (CU_add_test(my_test_suite, "kollar om sökt value finns", test_if_value_exist) == NULL) ||
+    (CU_add_test(my_test_suite, "kollar om sökt predikat stämmer på någon entry", test_pred_any) == NULL) ||
+    (CU_add_test(my_test_suite, "kollar om sökt predikat stämmer på alla entrys", test_pred_all) == NULL) ||
+    (CU_add_test(my_test_suite, "applicerar en funktion på alla entrys i ht", test_apply_to_all) == NULL) ||
+
     0
   )
     {
