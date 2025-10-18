@@ -4,6 +4,7 @@
 #include <limits.h>
 #include <stdlib.h>
 #include "linked_list.h"
+#include "iterator.h"
 #include <string.h>
 
 int init_suite(void) {
@@ -23,6 +24,14 @@ int init_suite_list(void) {
 }
 
 int clean_suite_list(void) {
+  return 0;
+}
+
+int init_suite_iterator(void){
+  return 0;
+}
+
+int clean_suite_iterator(void){
   return 0;
 }
 
@@ -560,6 +569,90 @@ void test_linked_list_apply_to_all(){
   ioopm_linked_list_destroy(lnk_lst);
 }
 
+void test_iterator_checking_next(){
+    
+    ioopm_list_t *lnk_lst = ioopm_linked_list_create();
+    ioopm_linked_list_append(lnk_lst, 1);
+    ioopm_linked_list_append(lnk_lst, 2);
+    ioopm_linked_list_append(lnk_lst, 3);
+
+    ioopm_list_iterator_t *iter = ioopm_list_iterator(lnk_lst);
+
+    CU_ASSERT_TRUE(ioopm_iterator_has_next(iter));
+    CU_ASSERT_EQUAL(ioopm_iterator_next(iter), 1);
+
+    CU_ASSERT_TRUE(ioopm_iterator_has_next(iter));
+    CU_ASSERT_EQUAL(ioopm_iterator_next(iter), 2);
+
+    CU_ASSERT_TRUE(ioopm_iterator_has_next(iter));
+    CU_ASSERT_EQUAL(ioopm_iterator_next(iter), 3);
+
+    CU_ASSERT_FALSE(ioopm_iterator_has_next(iter));
+
+    ioopm_iterator_destroy(iter);
+    ioopm_linked_list_destroy(lnk_lst);
+}
+
+void test_iterator_reset(){
+    
+    ioopm_list_t *lnk_lst = ioopm_linked_list_create();
+    ioopm_linked_list_append(lnk_lst, 1);
+    ioopm_linked_list_append(lnk_lst, 2);
+     
+    ioopm_list_iterator_t *iter = ioopm_list_iterator(lnk_lst);
+
+    CU_ASSERT_TRUE(ioopm_iterator_has_next(iter));
+    CU_ASSERT_EQUAL(ioopm_iterator_next(iter), 1);
+
+    CU_ASSERT_TRUE(ioopm_iterator_has_next(iter));
+    CU_ASSERT_EQUAL(ioopm_iterator_next(iter), 2);
+
+    CU_ASSERT_FALSE(ioopm_iterator_has_next(iter));
+
+    ioopm_iterator_reset(iter);
+    
+    CU_ASSERT_TRUE(ioopm_iterator_has_next(iter));
+    CU_ASSERT_EQUAL(ioopm_iterator_next(iter), 1);
+
+    CU_ASSERT_TRUE(ioopm_iterator_has_next(iter));
+    CU_ASSERT_EQUAL(ioopm_iterator_next(iter), 2);
+
+    CU_ASSERT_FALSE(ioopm_iterator_has_next(iter));
+
+    ioopm_iterator_destroy(iter);
+    ioopm_linked_list_destroy(lnk_lst);
+}
+
+void test_iterator_empty_list()
+{
+    ioopm_list_t *lnk_lst = ioopm_linked_list_create();
+    ioopm_list_iterator_t *iter = ioopm_list_iterator(lnk_lst);
+
+    CU_ASSERT_FALSE(ioopm_iterator_has_next(iter));
+
+    ioopm_iterator_destroy(iter);
+    ioopm_linked_list_destroy(lnk_lst);
+}
+
+
+void test_current_iterator(){
+    
+    ioopm_list_t *lnk_lst = ioopm_linked_list_create();
+    ioopm_linked_list_append(lnk_lst, 1);
+    ioopm_linked_list_append(lnk_lst, 2);
+    ioopm_list_iterator_t *iter = ioopm_list_iterator(lnk_lst);
+
+    CU_ASSERT_TRUE(ioopm_iterator_has_next(iter));
+    CU_ASSERT_EQUAL(ioopm_iterator_current(iter), 1);
+    CU_ASSERT_EQUAL(ioopm_iterator_next(iter), 1);
+
+    CU_ASSERT_TRUE(ioopm_iterator_has_next(iter));
+    CU_ASSERT_EQUAL(ioopm_iterator_next(iter), 2);
+
+    ioopm_iterator_destroy(iter);
+    ioopm_linked_list_destroy(lnk_lst);
+}
+
 int main() {
   // First we try to set up CUnit, and exit if we fail
   if (CU_initialize_registry() != CUE_SUCCESS)
@@ -602,7 +695,6 @@ int main() {
     (CU_add_test(my_test_suite, "kollar om sökt predikat stämmer på någon entry", test_pred_any) == NULL) ||
     (CU_add_test(my_test_suite, "kollar om sökt predikat stämmer på alla entrys", test_pred_all) == NULL) ||
     (CU_add_test(my_test_suite, "applicerar en funktion på alla entrys i ht", test_apply_to_all) == NULL) ||
-
     0
   )
     {
@@ -629,6 +721,23 @@ int main() {
     (CU_add_test(list_suite, "any predicate", test_linked_list_any) == NULL) ||
     (CU_add_test(list_suite, "apply_to_all mutates values", test_linked_list_apply_to_all) == NULL) ||
     (CU_add_test(list_suite, "contains finds existing element", test_linked_list_contains) == NULL) 
+  )
+  {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
+
+  CU_pSuite iterator_suite = CU_add_suite("Iterator suite", init_suite_iterator, clean_suite_iterator); 
+  if (iterator_suite == NULL) {                                                                     
+    CU_cleanup_registry();                                                                  
+    return CU_get_error();                                                                    
+  }   
+
+  if (
+    (CU_add_test(iterator_suite, "Testing both our has_next and next functions", test_iterator_checking_next) == NULL) ||
+    (CU_add_test(iterator_suite, "Testing our iterator reset function", test_iterator_reset) == NULL) ||
+    (CU_add_test(iterator_suite, "Testing our iterator in an empty list", test_iterator_empty_list) == NULL) ||
+    (CU_add_test(iterator_suite, "Testing our iterator current function", test_current_iterator) == NULL) 
   )
   {
     CU_cleanup_registry();
