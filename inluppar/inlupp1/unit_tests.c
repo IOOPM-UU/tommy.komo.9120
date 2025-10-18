@@ -1,9 +1,10 @@
 #include <CUnit/Basic.h>
 #include "hash_table.h"
-#include <limits.h>
+#include <stdbool.h>
 #include <limits.h>
 #include <stdlib.h>
-
+#include "linked_list.h"
+#include <string.h>
 
 int init_suite(void) {
   // Change this function if you want to do something *before* you
@@ -17,6 +18,13 @@ int clean_suite(void) {
   return 0;
 }
 
+int init_suite_list(void) {
+  return 0;
+}
+
+int clean_suite_list(void) {
+  return 0;
+}
 
 void test_lookup_empty()
 {
@@ -414,7 +422,143 @@ void test_apply_to_all()
   ioopm_hash_table_destroy(ht);
 }
 
+void test_list_create_destroy(void)
+{
+  ioopm_list_t *list = ioopm_linked_list_create();
 
+  CU_ASSERT_PTR_NOT_NULL(list);
+
+  ioopm_linked_list_destroy(list);
+}
+
+void test_prepend(void)
+{
+  ioopm_list_t *list = ioopm_linked_list_create();
+
+  ioopm_linked_list_prepend(list, 3);
+
+  CU_ASSERT_EQUAL(ioopm_linked_list_size(list), 1);
+  CU_ASSERT_FALSE(ioopm_linked_list_is_empty(list));
+  CU_ASSERT_EQUAL(ioopm_linked_list_get(list, 0), 3);
+  
+  ioopm_linked_list_destroy(list);
+}
+
+
+void test_linked_list_append_and_get(){
+  ioopm_list_t *lnk_lst = ioopm_linked_list_create();
+  ioopm_linked_list_append(lnk_lst, 4);
+  ioopm_linked_list_append(lnk_lst, 5);
+  
+  CU_ASSERT_EQUAL(ioopm_linked_list_get(lnk_lst, 1), 5);
+
+  ioopm_linked_list_destroy(lnk_lst);
+}
+
+void test_insert_list_and_prepend(){
+   ioopm_list_t *lnk_lst = ioopm_linked_list_create();
+
+   ioopm_linked_list_insert(lnk_lst, 0, 7);
+   CU_ASSERT_EQUAL(ioopm_linked_list_get(lnk_lst, 0), 7);
+
+   ioopm_linked_list_append(lnk_lst, 4);
+   ioopm_linked_list_insert(lnk_lst, 1, 8);
+   CU_ASSERT_EQUAL(ioopm_linked_list_get(lnk_lst, 1), 8);
+
+  ioopm_linked_list_destroy(lnk_lst);
+}
+
+void test_linked_list_remove(){
+  ioopm_list_t *lnk_lst = ioopm_linked_list_create();
+  ioopm_linked_list_append(lnk_lst, 3);
+
+  ioopm_linked_list_remove(lnk_lst, 0);
+
+  CU_ASSERT_TRUE(ioopm_linked_list_is_empty(lnk_lst));
+  CU_ASSERT_EQUAL(ioopm_linked_list_size(lnk_lst), 0);
+
+  ioopm_linked_list_destroy(lnk_lst);
+}
+
+void test_linked_list_clear(){
+  ioopm_list_t *lnk_lst = ioopm_linked_list_create();
+  ioopm_linked_list_append(lnk_lst, 1);
+  ioopm_linked_list_append(lnk_lst, 2);
+  ioopm_linked_list_append(lnk_lst, 3);
+
+  ioopm_linked_list_clear(lnk_lst);
+
+  CU_ASSERT_TRUE(ioopm_linked_list_is_empty(lnk_lst));
+  CU_ASSERT_EQUAL(ioopm_linked_list_size(lnk_lst), 0);
+
+  ioopm_linked_list_destroy(lnk_lst);
+}
+
+void test_linked_list_contains(){
+  ioopm_list_t *list = ioopm_linked_list_create();
+
+  ioopm_linked_list_append(list, 10);
+  ioopm_linked_list_append(list, 20);
+  ioopm_linked_list_append(list, 30);
+
+  CU_ASSERT_TRUE(ioopm_linked_list_contains(list, 20));
+  CU_ASSERT_FALSE(ioopm_linked_list_contains(list, 99));
+  
+  ioopm_linked_list_destroy(list);
+}
+
+bool is_odd(int value, void *extra) {
+    (void) extra; // används inte
+    return value % 2 == 1;
+}
+
+void test_linked_list_all()
+{
+  ioopm_list_t *lnk_lst = ioopm_linked_list_create();
+  ioopm_linked_list_append(lnk_lst, 1);
+  ioopm_linked_list_append(lnk_lst, 3);
+  ioopm_linked_list_append(lnk_lst, 5);
+
+  CU_ASSERT_TRUE(ioopm_linked_list_all(lnk_lst, is_odd, NULL));
+
+  ioopm_linked_list_destroy(lnk_lst);
+}
+
+void test_linked_list_any(){
+  ioopm_list_t *lnk_lst = ioopm_linked_list_create();
+  ioopm_linked_list_append(lnk_lst, 2);
+  ioopm_linked_list_append(lnk_lst, 4);
+
+  
+  CU_ASSERT_FALSE(ioopm_linked_list_any(lnk_lst, is_odd, NULL));
+
+  ioopm_linked_list_append(lnk_lst, 5);
+  CU_ASSERT_TRUE(ioopm_linked_list_any(lnk_lst, is_odd, NULL));
+
+  ioopm_linked_list_destroy(lnk_lst);
+}
+
+static void add_n(int *value, void *extra) {
+    int *n = extra;
+    *value += *n;
+}
+
+void test_linked_list_apply_to_all(){
+  ioopm_list_t *lnk_lst = ioopm_linked_list_create();
+
+  ioopm_linked_list_append(lnk_lst, 1);
+  ioopm_linked_list_append(lnk_lst, 2);
+  ioopm_linked_list_append(lnk_lst, 3);
+
+  int nmr = 1;
+  ioopm_linked_list_apply_to_all(lnk_lst, add_n, &nmr);
+
+  CU_ASSERT_EQUAL(ioopm_linked_list_get(lnk_lst, 0), 2);
+  CU_ASSERT_EQUAL(ioopm_linked_list_get(lnk_lst, 1), 3);
+  CU_ASSERT_EQUAL(ioopm_linked_list_get(lnk_lst, 2), 4);
+
+  ioopm_linked_list_destroy(lnk_lst);
+}
 
 int main() {
   // First we try to set up CUnit, and exit if we fail
@@ -467,6 +611,29 @@ int main() {
       return CU_get_error();
     }
 
+
+  CU_pSuite list_suite = CU_add_suite("Linked list suite", init_suite_list, clean_suite_list); 
+  if (list_suite == NULL) {                                                                     
+    CU_cleanup_registry();                                                                  
+    return CU_get_error();                                                                    
+  }   
+
+  if (
+    (CU_add_test(list_suite, "creating and destroying a linked list", test_list_create_destroy) == NULL) ||
+    (CU_add_test(list_suite, "prepend inserts at head", test_prepend) == NULL) ||
+    (CU_add_test(list_suite, "append + get", test_linked_list_append_and_get) == NULL) ||
+    (CU_add_test(list_suite, "insert at index", test_insert_list_and_prepend) == NULL) || 
+    (CU_add_test(list_suite, "remove at index", test_linked_list_remove) == NULL) ||
+    (CU_add_test(list_suite, "clear empties list", test_linked_list_clear) == NULL) ||
+    (CU_add_test(list_suite, "all predicate", test_linked_list_all) == NULL) ||
+    (CU_add_test(list_suite, "any predicate", test_linked_list_any) == NULL) ||
+    (CU_add_test(list_suite, "apply_to_all mutates values", test_linked_list_apply_to_all) == NULL) ||
+    (CU_add_test(list_suite, "contains finds existing element", test_linked_list_contains) == NULL) 
+  )
+  {
+    CU_cleanup_registry();
+    return CU_get_error();
+  }
   // Set the running mode. Use CU_BRM_VERBOSE for maximum output.
   // Use CU_BRM_NORMAL to only print errors and a summary
   CU_basic_set_mode(CU_BRM_VERBOSE);
@@ -477,4 +644,6 @@ int main() {
   // Tear down CUnit before exiting
   CU_cleanup_registry();
   return CU_get_error();
-} 
+
+                                                                  
+}
