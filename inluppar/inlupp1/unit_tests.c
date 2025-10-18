@@ -266,16 +266,19 @@ void test_all_keys(){
   ioopm_hash_table_insert(ht, 0, "l");
   ioopm_hash_table_insert(ht, 99, "o");
 
-  int *table_keys = ioopm_hash_table_keys(ht);
-  for(int i = 0; i < 5 ; i++){ //loop för alla nycklar vi borde ha, i -> keys[i]
+  ioopm_list_t *table_keys = ioopm_hash_table_keys(ht);
+  ioopm_list_iterator_t *iter = ioopm_list_iterator(table_keys);
+
+  while(ioopm_iterator_has_next(iter)){
    
-    bool match_found = false; //fick hjälp av chat att implementera
-    
+    bool match_found = false; //fick hjälp att implementera
+    int cursor = ioopm_iterator_next(iter);
+
     for(int z = 0; z < 5 ; z++){ //loop för alla nycklar vi har
       
-      if(keys[i] == table_keys[z])
+      if(keys[z] == cursor)
       {
-        found[i] = true;
+        found[z] = true;
         match_found = true;
         break;
       } 
@@ -286,8 +289,8 @@ void test_all_keys(){
   for(int i = 0; i < 5 ; i++){ //alla värden ska vara true om funktionerna funkar som de ska
       CU_ASSERT_TRUE(found[i]);
     }
-  free(table_keys);
-  
+  ioopm_linked_list_destroy(table_keys);
+  ioopm_iterator_destroy(iter); 
   ioopm_hash_table_destroy(ht); 
 }
 
@@ -446,7 +449,7 @@ void test_prepend(void)
 
   ioopm_linked_list_prepend(list, 3);
 
-  CU_ASSERT_EQUAL(ioopm_linked_list_size(list), 1);
+  CU_ASSERT_EQUAL(ioopm_linked_list_size(list), (size_t)1);
   CU_ASSERT_FALSE(ioopm_linked_list_is_empty(list));
   CU_ASSERT_EQUAL(ioopm_linked_list_get(list, 0), 3);
   

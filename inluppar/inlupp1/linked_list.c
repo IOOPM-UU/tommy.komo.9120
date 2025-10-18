@@ -6,6 +6,7 @@
 #include <assert.h>
 #include "linked_list.h"
 #include "hash_table.h"
+#include <stddef.h>
 
 typedef struct link link_t;
 
@@ -21,7 +22,7 @@ struct list
 {
     link_t *head;
     link_t *tail;
-    int size;
+    size_t size;
 };
 
 
@@ -88,7 +89,7 @@ void ioopm_linked_list_append(ioopm_list_t *list, int value)
 
 }
 
-void ioopm_linked_list_insert(ioopm_list_t *list, int index, int value)
+void ioopm_linked_list_insert(ioopm_list_t *list, size_t index, int value)
 {
     assert(list);
     assert(index >= 0 && index <= list->size);
@@ -106,7 +107,7 @@ void ioopm_linked_list_insert(ioopm_list_t *list, int index, int value)
     
     
     link_t *cursor = list->head;
-    for(int i = 1; i < index;i++)
+    for(size_t i = 1; i < index;i++)
     {
         cursor = cursor->next;
     }
@@ -115,7 +116,7 @@ void ioopm_linked_list_insert(ioopm_list_t *list, int index, int value)
     list->size++;
 }   
 
-int ioopm_linked_list_remove(ioopm_list_t *list, int index)
+int ioopm_linked_list_remove(ioopm_list_t *list, size_t index)
 {
     assert(list);
     assert(index >= 0 && index < list->size);
@@ -134,7 +135,7 @@ int ioopm_linked_list_remove(ioopm_list_t *list, int index)
     }
 
     link_t *cursor = list->head;
-    for(int i = 1; i < index;i++){  //stanna på linken innan
+    for(size_t i = 1; i < index;i++){  //stanna på linken innan
         cursor = cursor->next;
     }
 
@@ -154,13 +155,13 @@ int ioopm_linked_list_remove(ioopm_list_t *list, int index)
 }
 
 
-int ioopm_linked_list_get(ioopm_list_t *list, int index){
+int ioopm_linked_list_get(ioopm_list_t *list, size_t index){
     
     assert(list);
     assert(index >= 0 && index < list->size);
 
     link_t *cursor = list->head;
-    for(int i = 0; i < index;i++){
+    for(size_t i = 0; i < index;i++){
         cursor = cursor->next;
     }
     return cursor->value;
@@ -183,7 +184,7 @@ bool ioopm_linked_list_contains(ioopm_list_t *list, int element){
 }
 
 
-int ioopm_linked_list_size(ioopm_list_t *list)
+size_t ioopm_linked_list_size(ioopm_list_t *list)
 {
     assert(list);
     return list->size;
