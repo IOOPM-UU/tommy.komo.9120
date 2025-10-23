@@ -40,7 +40,7 @@ ioopm_list_t *ioopm_linked_list_create(ioopm_eq_function *eq_fun)
     ioopm_list_t *lst = calloc(1, sizeof(ioopm_list_t));
     lst->eq_fun = eq_fun;
     return lst;
-};
+}
 
 void ioopm_linked_list_destroy(ioopm_list_t *list)
 {
