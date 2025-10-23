@@ -1,5 +1,6 @@
 #include "linked_list.h"
 #include "iterator.h"
+#include "common.h"
 #include <stdlib.h>
 #include <stdbool.h>
 #include <assert.h>
@@ -7,7 +8,7 @@
 
 struct link
 {
-    int value;
+    elem_t value;
     link_t *next;
 };
 
@@ -15,9 +16,9 @@ struct list
 {
     link_t *head;
     size_t size;
+    ioopm_eq_function *eq_fun;
 };
 
-/* --- Iterator structure --- */
 
 struct list_iterator
 {
@@ -40,11 +41,11 @@ bool ioopm_iterator_has_next(ioopm_list_iterator_t *iter)
     return (iter->current != NULL);
 }
 
-int ioopm_iterator_next(ioopm_list_iterator_t *iter)
+elem_t ioopm_iterator_next(ioopm_list_iterator_t *iter)
 {
     assert(iter->current != NULL);
 
-    int value = iter->current->value;
+    elem_t value = iter->current->value;
     iter->current = iter->current->next;   
     return value; 
 }
@@ -55,7 +56,7 @@ void ioopm_iterator_reset(ioopm_list_iterator_t *iter)
     iter->current = iter->list->head;
 }
 
-int ioopm_iterator_current(ioopm_list_iterator_t *iter)
+elem_t ioopm_iterator_current(ioopm_list_iterator_t *iter)
 {
     assert(iter);
     if (iter->current == NULL)
