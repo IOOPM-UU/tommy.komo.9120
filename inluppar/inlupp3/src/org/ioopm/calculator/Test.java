@@ -1,9 +1,13 @@
 package org.ioopm.calculator;
 
 import org.ioopm.calculator.ast.*;
+import org.ioopm.calculator.parser.*;
+
+import java.io.IOException;
+
 
 public class Test{
-    public static void main(String[] args){
+    public static void main(String[] args) throws IOException{
         Constant c1 = new Constant(5);
         Constant c2 = new Constant(2);
         Variable v = new Variable("x");
@@ -32,6 +36,40 @@ public class Test{
 
         testCommand(Vars.instance());
         testCommand(Quit.instance());
+        testCommand(Clear.instance());
+
+        testIllegalAssignment(new Assignment(new Constant(22), new NamedConstant("Answer", 42)));
+
+
+        CalculatorParser parser = new CalculatorParser();
+        Environment parserVars = new Environment();
+
+        SymbolicExpression constantAddition = parser.parse("Answer + Answer", parserVars);
+        testEvaluating(new Constant(84), constantAddition, parserVars);
+
+        SymbolicExpression illegalAnswerAssignment = parser.parse("43 = Answer", new Environment());
+        testIllegalAssignment(illegalAnswerAssignment);
+
+        SymbolicExpression varsCommand = parser.parse("Vars", new Environment());
+        if (varsCommand.equals(Vars.instance())) {
+            System.out.println("Passed: vars");
+        } else {
+            System.out.println("Error: expected vars");
+        }
+
+        SymbolicExpression quitCommand = parser.parse("Quit", new Environment());
+        if (quitCommand.equals(Quit.instance())) {
+            System.out.println("Passed: quit");
+        } else {
+            System.out.println("Error: expected quit");
+        }
+
+        SymbolicExpression clearCommand = parser.parse("Clear", new Environment());
+        if (clearCommand.equals(Clear.instance())) {
+            System.out.println("Passed: clear");
+        } else {
+            System.out.println("Error: expected clear");
+        }
     }
 
     public static void testPrinting(String expected, SymbolicExpression e) {
@@ -56,6 +94,15 @@ public class Test{
             System.out.println("Passed: command");
         } else {
             System.out.println("Error: expected command");
+        }
+    }
+
+    public static void testIllegalAssignment(SymbolicExpression e) {
+        try {
+            e.eval(new Environment());
+            System.out.println("Error: expected illegal assignment");
+        } catch (IllegalAssignmentException exception) {
+            System.out.println("Passed: illegal assignment");
         }
     }
 }

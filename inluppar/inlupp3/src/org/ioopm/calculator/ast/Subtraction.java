@@ -9,7 +9,7 @@ public class Subtraction extends Binary{
         SymbolicExpression lhs = this.getLhs().eval(vars);
         SymbolicExpression rhs = this.getRhs().eval(vars);
 
-        if (lhs.isconstant() && rhs.isConstant()){
+        if (lhs.isConstant() && rhs.isConstant()){
             return new Constant(lhs.getValue() - rhs.getValue());
         } else {
             return new Subtraction(lhs, rhs);

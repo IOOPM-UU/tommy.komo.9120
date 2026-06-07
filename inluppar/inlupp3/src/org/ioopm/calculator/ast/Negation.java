@@ -14,7 +14,7 @@ public class Negation extends Unary{
     }
 
     public SymbolicExpression eval(Environment vars){
-        SymbolicExpression argument = this.getArgument().eval(vars);  /kolla om argumentet är en konstant och isåfall räkna ut resultat
+        SymbolicExpression argument = this.getArgument().eval(vars); 
 
         if(argument.isConstant()){
             return new Constant(-argument.getValue());
