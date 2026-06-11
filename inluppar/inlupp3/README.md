@@ -22,4 +22,4 @@ The program does not save variables after the program has been closed. Commands 
 
 For priorities when printing expressions, i chose to override getPriority() in the classes that need a special priority. The assignment also suggested using a priority field, however overriding felt easier to follow because each operator class defines its own priority directly.
 
-For named constants, Constants stores a HashMap from String to Double. The assignment also mentioned storing NamedConstant objects directly in the map, but we kept the String to Double version because it was simpler and close to the suggested code.
+For named constants, Constants stores a HashMap from String to Double. The assignment also mentioned storing NamedConstant objects directly in the map, but i kept the String to Double version because it was simpler and close to the suggested code.
