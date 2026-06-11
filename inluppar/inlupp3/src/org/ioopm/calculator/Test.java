@@ -50,21 +50,21 @@ public class Test{
         SymbolicExpression illegalAnswerAssignment = parser.parse("43 = Answer", new Environment());
         testIllegalAssignment(illegalAnswerAssignment);
 
-        SymbolicExpression varsCommand = parser.parse("Vars", new Environment());
+        SymbolicExpression varsCommand = parser.parse("vars", new Environment());
         if (varsCommand.equals(Vars.instance())) {
             System.out.println("Passed: vars");
         } else {
             System.out.println("Error: expected vars");
         }
 
-        SymbolicExpression quitCommand = parser.parse("Quit", new Environment());
+        SymbolicExpression quitCommand = parser.parse("quit", new Environment());
         if (quitCommand.equals(Quit.instance())) {
             System.out.println("Passed: quit");
         } else {
             System.out.println("Error: expected quit");
         }
 
-        SymbolicExpression clearCommand = parser.parse("Clear", new Environment());
+        SymbolicExpression clearCommand = parser.parse("clear", new Environment());
         if (clearCommand.equals(Clear.instance())) {
             System.out.println("Passed: clear");
         } else {
